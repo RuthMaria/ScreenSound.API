@@ -1,22 +1,40 @@
 using Microsoft.AspNetCore.Mvc;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
+using System.Data.SqlTypes;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+/*
+ Durante a serialização, se houver ciclos de referência (por exemplo, um objeto A referenciando um objeto B, 
+ que por sua vez referencia o objeto A), esses ciclos serão ignorados em vez de causar uma exceção.
+ */
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+
+/*
+ O Asp.NET vai criar esses objetos para utilizarmos na aplicação.
+ Isso é chamado de injeção de dependência e evitou a duplicação do código abaixo em cada método.
+
+ var dal = new DAL<Artista>(new ScreenSoundContext());
+
+ Injeção de Dependência é um padrão de design que permite que objetos recebam suas dependências de 
+ uma fonte externa ao invés de criarem-nas diretamente. Isso facilita o gerenciamento das dependências
+ e promove um código mais modular, testável e fácil de manter.
+*/
+builder.Services.AddDbContext<ScreenSoundContext>();
+builder.Services.AddTransient<DAL<Artista>>();
 
 var app = builder.Build();
 
-app.MapGet("/Artistas", () =>
+// FromServices recupera o objeto criado pelo Asp.NET
+app.MapGet("/Artistas", ([FromServices] DAL<Artista> dal) =>
 {
-    var dal = new DAL<Artista>(new ScreenSoundContext());
     return Results.Ok(dal.Listar());
 });
 
-app.MapGet("/Artistas/{nome}", (string nome) =>
+app.MapGet("/Artistas/{nome}", ([FromServices] DAL < Artista > dal, string nome) =>
 {
-    var dal = new DAL<Artista>(new ScreenSoundContext());
     var artista = dal.RecuperarPor(a => a.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase)); // "StringComparison.OrdinalIgnoreCase" ignora o case sensitive
 
     if (artista is null)
@@ -27,11 +45,24 @@ app.MapGet("/Artistas/{nome}", (string nome) =>
     return Results.Ok(artista);
 });
 
-app.MapPost("/Artistas", ([FromBody] Artista artista) => // "FromBody" indica que os dados vem no corpo da requisição
+app.MapPost("/Artistas", ([FromServices] DAL < Artista > dal, [FromBody] Artista artista) => // "FromBody" indica que os dados vem no corpo da requisição
 {
-    var dal = new DAL<Artista>(new ScreenSoundContext());
     dal.Adicionar(artista);
     return Results.Ok();
+});
+
+app.MapDelete("/Artistas/{id}", ([FromServices] DAL<Artista> dal, int id) => {
+    var artista = dal.RecuperarPor(a => a.Id == id);
+
+    if (artista is null)
+    {
+        return Results.NotFound();
+    }
+
+    dal.Deletar(artista);
+    
+    return Results.NoContent();
+
 });
 
 app.Run();
