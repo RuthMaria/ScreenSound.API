@@ -13,6 +13,12 @@ public class Artista
         Musicas.Add(musica);
     }
 
+    public Artista(string nome, string bio)
+    {
+        Nome = nome;
+        Bio = bio;
+    }
+
     public void ExibirDiscografia()
     {
         Console.WriteLine($"Discografia do artista {Nome}");

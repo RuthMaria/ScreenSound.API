@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ScreenSound.API.Requests;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
 
@@ -27,9 +28,12 @@ public static class ArtistasExtensions
             return Results.Ok(artista);
         });
 
-        app.MapPost("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody] Artista artista) => // "FromBody" indica que os dados vem no corpo da requisição
+        app.MapPost("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody]  ArtistaRequest artistaRequest) => // "FromBody" indica que os dados vem no corpo da requisição
         {
+            var artista = new Artista(artistaRequest.nome, artistaRequest.bio);
+            
             dal.Adicionar(artista);
+
             return Results.Ok();
         });
 
