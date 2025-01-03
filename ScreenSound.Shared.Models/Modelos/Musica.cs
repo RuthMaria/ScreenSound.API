@@ -7,6 +7,12 @@ public class Musica
         Nome = nome;
     }
 
+    public Musica(string nome, int? anoLancamento)
+    {
+        Nome = nome;
+        AnoLancamento = anoLancamento;
+    }
+
     public Musica() { }
 
     public string Nome { get; set; }
