@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ScreenSound.API.Requests;
+using ScreenSound.API.Response;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
 
@@ -13,7 +14,16 @@ public static class MusicasExtensions
 
         app.MapGet("/Musicas", ([FromServices] DAL<Musica> dal) =>
         {
-            return Results.Ok(dal.Listar());
+            var musicaList = dal.Listar();
+
+            if (musicaList is null)
+            {
+                return Results.NotFound();
+            }
+            
+            var musicaListResponse = EntityListToResponseList(musicaList);
+            
+            return Results.Ok(musicaListResponse);
         });
 
         app.MapGet("/Musicas/{nome}", ([FromServices] DAL<Musica> dal, string nome) =>
@@ -25,12 +35,17 @@ public static class MusicasExtensions
                 return Results.NotFound(new { Message = "Musica não encontrado" });
             }
 
-            return Results.Ok(musica);
+            return Results.Ok(EntityToResponse(musica));
         });
 
         app.MapPost("/Musicas", ([FromServices] DAL<Musica> dal, [FromBody] MusicaRequest musicaRequest) =>
         {
-            var musica = new Musica(musicaRequest.nome, musicaRequest.anoLancamento);
+            var musica = new Musica(musicaRequest.nome)
+            {
+                ArtistaId = musicaRequest.ArtistaId,
+                AnoLancamento = musicaRequest.anoLancamento
+            };
+
             dal.Adicionar(musica);
 
             return Results.Ok();
@@ -65,8 +80,16 @@ public static class MusicasExtensions
 
             return Results.Ok();
         });
-
     }
 
+    private static ICollection<MusicaResponse> EntityListToResponseList(IEnumerable<Musica> musicaList)
+    {
+        return musicaList.Select(a => EntityToResponse(a)).ToList();
+    }
+
+    private static MusicaResponse EntityToResponse(Musica musica)
+    {
+        return new MusicaResponse(musica.Id, musica.Nome!, musica.Artista!.Id, musica.Artista.Nome);
+    }
 }
 
