@@ -27,7 +27,7 @@ O Screen Sound é uma aplicação que permite:
 - Listar músicas de um artista
 - Listar músicas por ano de lançamento
 
-Onde foi trabalhado: comunicação com SQLServer, bibliotecas ORM, aplicação de Generic e criação e utilização de migrations.
+Onde foi criada uma API com C# utilizando um template mínimo, ao qual foi aplicado boas práticas na sua construção e utilização do Swagger para documentá-la.
 
 <a id="technologies"></a><br>
 
