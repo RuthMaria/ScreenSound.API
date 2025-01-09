@@ -50,7 +50,7 @@ Onde foi criada uma API com C# utilizando um template mínimo, ao qual foi aplic
 - Clonar este repositório
 
 ```
-git clone https://github.com/RuthMaria/3506-csharpWeb-screensound.git
+git clone https://github.com/RuthMaria/ScreenSound.API.git
 ```
 
 - Rodar o projeto no Visual Studio
